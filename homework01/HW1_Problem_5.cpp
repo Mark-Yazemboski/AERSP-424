@@ -46,6 +46,7 @@ class plane
             //Prints out that a plane was created and where in memory its stored
             std::cout << "Plane Created at " << this << std::endl;
 
+            //Prints where the plane is going and a little silly message
             cout << "Thank you for flying with us, this plane will be going from "<< origin << " to " << destination <<"."<<endl;
             cout << "Lucky for you this plane is not a Boeing... Unlucky for you, this plane has no pilot and is 100 lines of code." << endl;
         }
@@ -157,11 +158,19 @@ plane::Flight_Distances plane::Routs = {
 //Main
 int main()
 {
-    //Makes a plane and prints the distance to make sure it is correct.
+    //Makes a plane going from SCE to ORD
     plane Plane1("SCE", "ORD");
+
+    //Sets the plane velocity to 450 mph
     Plane1.set_vel(450);
+
+    //Sets the time step to 15 seconds
     int timestep = 15;
+
+    //Sets the max iterations to 1500
     int Max_Iterations = 1500;
+
+    //Runs a for loop from 0 to the max iterations and calls the oporate function and prints the time and position
     for (int i = 0; i<Max_Iterations; i++){
         Plane1.oporate(timestep);
         cout << "Time " << timestep*i << " seconds. Position: " << Plane1.get_pos() <<" miles." << endl;
