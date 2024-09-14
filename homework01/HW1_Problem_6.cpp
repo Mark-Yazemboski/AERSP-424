@@ -163,7 +163,7 @@ class Pilot
             //sets the name of the pilot and also sets the location of his plane 
             name = pilot_name;
             my_plane = Pilots_Plane;
-            cout<<"Pilot " << name << " is flying plane "<< my_plane << " and is at the gate and ready to board"<< endl;
+            cout<<"Pilot " << name << " with ID " << this << " is flying plane "<< my_plane << " and is at the gate and ready to board"<< endl;
             
 
         }
