@@ -73,11 +73,11 @@ class plane
                 if (destination == "SCE")
                 {
                     at_SCE = 1;
-                }else{
-                    string placeholder = origin;
-                    origin = destination;
-                    destination = origin;
                 }
+                string placeholder = origin;
+                origin = destination;
+                destination = origin;
+                
                 pos = 0;
             }
         }
