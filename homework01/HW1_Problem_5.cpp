@@ -9,7 +9,7 @@
 using namespace std;
 
 //Plane class
-class plane
+class Plane
 {
 
 
@@ -22,7 +22,7 @@ class plane
         static Flight_Distances Routs;
 
         //This is the section where when you make a plane object, this stuff happens
-        plane(string from, string to)
+        Plane(string from, string to)
         {
             //Sets the to and from to the origion and destination
             origin = from;
@@ -52,7 +52,7 @@ class plane
         }
 
         //This is the deconstructor
-        ~plane()
+        ~Plane()
         {
             cout<<"New door created.... Plane Destroyed."<<endl;
         }
@@ -149,17 +149,17 @@ class plane
 };
 
 //This is the rout map/dictionary that contains all of the routs and their corisponding distances.
-plane::Flight_Distances plane::Routs = {
-    {plane::Airport_Rout("SCE", "PHL"), 160},
-    {plane::Airport_Rout("SCE", "ORD"), 640},
-    {plane::Airport_Rout("SCE", "EWR"), 220}
+Plane::Flight_Distances Plane::Routs = {
+    {Plane::Airport_Rout("SCE", "PHL"), 160},
+    {Plane::Airport_Rout("SCE", "ORD"), 640},
+    {Plane::Airport_Rout("SCE", "EWR"), 220}
 };
 
 //Main
 int main()
 {
     //Makes a plane going from SCE to ORD
-    plane Plane1("SCE", "ORD");
+    Plane Plane1("SCE", "ORD");
 
     //Sets the plane velocity to 450 mph
     Plane1.set_vel(450);

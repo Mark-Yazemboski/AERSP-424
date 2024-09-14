@@ -8,7 +8,7 @@
 using namespace std;
 
 //Plane class
-class plane
+class Plane
 {
 
     //Sets the containers for the to and from and distance data
@@ -20,7 +20,7 @@ class plane
 
 
         //This is the section where when you make a plane object, this stuff happens
-        plane(string from, string to)
+        Plane(string from, string to)
         {
             //Sets the to and from to the origion and destination
             origin = from;
@@ -28,7 +28,7 @@ class plane
         }
 
         //This is the deconstructor
-        ~plane()
+        ~Plane()
         {
             cout<<"Deleted Plane Object"<<endl;
         }

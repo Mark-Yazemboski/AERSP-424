@@ -9,7 +9,7 @@
 using namespace std;
 
 //Plane class
-class plane
+class Plane
 {
 
 
@@ -22,7 +22,7 @@ class plane
         static Flight_Distances Routs;
 
         //This is the section where when you make a plane object, this stuff happens
-        plane(string from, string to)
+        Plane(string from, string to)
         {
             //Sets the to and from to the origion and destination
             origin = from;
@@ -48,7 +48,7 @@ class plane
         }
 
         //This is the deconstructor
-        ~plane()
+        ~Plane()
         {
             cout<<"Plane Destroyed"<<endl;
         }
@@ -143,17 +143,17 @@ class plane
 };
 
 //This is the rout map/dictionary that contains all of the routs and their corisponding distances.
-plane::Flight_Distances plane::Routs = {
-    {plane::Airport_Rout("SCE", "PHL"), 160},
-    {plane::Airport_Rout("SCE", "ORD"), 640},
-    {plane::Airport_Rout("SCE", "EWR"), 220}
+Plane::Flight_Distances Plane::Routs = {
+    {Plane::Airport_Rout("SCE", "PHL"), 160},
+    {Plane::Airport_Rout("SCE", "ORD"), 640},
+    {Plane::Airport_Rout("SCE", "EWR"), 220}
 };
 
 //Main
 int main()
 {
     //Makes a plane and prints the distance to make sure it is correct.
-    plane Plane1("SCE", "ORD");
+    Plane Plane1("SCE", "ORD");
     cout <<(Plane1.get_dist()) << endl;
     return 0;
 }
