@@ -146,7 +146,7 @@ int main() {
             fprintf(stdout, "\n%g lbs of fuel was drained from the fuel tanks.\n", Delta_Fuel);
         }else{
             fprintf(stdout, "%g lbs of fuel was added to the fuel tanks.\n", -1*Delta_Fuel);
-        }
+        } 
 
         //Prints out the final weight and CG location
         fprintf(stdout, "The new total weight is: %g lbs.\n", Total_Weight);
