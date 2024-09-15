@@ -297,7 +297,7 @@ int main()
     int timestep = 15;
 
     //Sets the max iterations to 1500
-    int Max_Iterations = 400;
+    int Max_Iterations = 1500;
 
     //Runs a for loop from 0 to the max iterations and will check where the plane is and switch pilots when nessesary
     cout<<endl;
