@@ -8,8 +8,10 @@
 #include <utility>
 using namespace std;
 
+//This is a way to tell C++ that the cockpit class is in the program, and allows the other classes to get compiled if they use methods from cockpit
 class Cockpit;
 
+//Makes the plane Class
 class Plane
 {
 
@@ -167,9 +169,10 @@ class Pilot
 
         }
 
+        //This is a second initilization that is only for when you only give a pilots name. I think its better for this problem
         Pilot(string pilot_name){
 
-            //sets the name of the pilot and also sets the location of his plane 
+            //sets the name of the pilot
             name = pilot_name;
             cout<<"Pilot " << name << " with certification number " << this << " is at the gate and ready to board the plane"<< endl;
             
@@ -188,6 +191,7 @@ class Pilot
             return name;
         }
 
+        //This will set the plane that the pilot is flying. if the plane is empty is will print a different message
         void Set_Plane(Plane* Pilots_Plane){
             my_plane = Pilots_Plane;
             if (my_plane == nullptr){
@@ -198,6 +202,7 @@ class Pilot
             
         }
 
+        //This will remove a plane that the pilot is flying and print a message
         void Remove_Plane(){
             my_plane = 0x0;
             cout<<"Pilot " << name << " with certification number " << this << " is taking a break."<< endl;
@@ -210,20 +215,27 @@ class Pilot
     string name;
 };
 
+
+//This is the cockpit class and is my solution to efficiently dealing with the switching pilots
 class Cockpit
 {
     public:
+
+        //This will initilize a cockpit object with 2 pilots, a captain and a copilot, and an airplane
         Cockpit(Pilot* Captiani, Pilot* CoPiloti,Plane* Cockpits_Planei){
             Captain = Captiani;
             CoPilot = CoPiloti;
             Cockpits_Plane = Cockpits_Planei;
         }
+
+        //This is if you wanted to chenge the pilots in the cockpit
         void Add_Pilots(Pilot* Captiani, Pilot* CoPiloti)
             {
                 Captain = Captiani;
                 CoPilot = CoPiloti;
             }
 
+        //This is where the pilots will switch. first the copilot gets control of the plane, and the captain gets removed, them the copilot becomes the capain and the captain becomes the co pilot
         void Switch_Pilots(){
             CoPilot->Set_Plane(Cockpits_Plane);
             Captain->Remove_Plane();
@@ -231,6 +243,8 @@ class Cockpit
             CoPilot = Captain;
             Captain = CoPilot;
         }
+
+    //Private section with some pilot and plane variables
     private:
         Pilot* Captain;
         Pilot* CoPilot;
@@ -251,21 +265,29 @@ int main()
     
     
 
-    //Makes a new pilot object named fred with his plane being the Plane1 object
+    //Makes a new pilot object named fred
     Pilot Fred("Fred");
 
+    //Makes a new pilot named ted
     Pilot Ted("Ted");
 
     //Makes a plane going from SCE to ORD
     Plane Plane1("SCE", "PHL");
+
     //Makes a plane pointer to the plane object
     Plane *plane_ptr = &Plane1;
 
+    //Sets fred as the pilot flying plane1
     Fred.Set_Plane(plane_ptr);
+
+    //Sets ted as the pilot resting
     Ted.Set_Plane(0x0);
 
+    //Makes pointers for the pilots 
     Pilot *ptr_fred = &Fred;
     Pilot *ptr_ted = &Ted;
+
+    //Makes a new cockpit variable with fred ted and plane1
     Cockpit Plane_1_Cockpit(ptr_fred,ptr_ted,plane_ptr);
 
     //Sets the plane velocity to 450 mph
@@ -277,11 +299,13 @@ int main()
     //Sets the max iterations to 1500
     int Max_Iterations = 400;
 
-    //Runs a for loop from 0 to the max iterations and calls the oporate function and prints the time and position
+    //Runs a for loop from 0 to the max iterations and will check where the plane is and switch pilots when nessesary
     cout<<endl;
     for (int i = 0; i<Max_Iterations; i++){
+        //Calls the oporate function for the plane to update its position
         Plane1.oporate(timestep);
-        //cout << "Time " << timestep*i << " seconds. Position: " << Plane1.get_pos() <<" miles." << endl;
+
+        //Checks to see if the plane is at SCE, if so the pilots will switch
         if (Plane1.get_SCE()){
             Plane_1_Cockpit.Switch_Pilots();
             cout<<endl;
