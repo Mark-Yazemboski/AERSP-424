@@ -120,6 +120,8 @@ int main() {
 
     //Checks to see if the weight and CG are in the correct limits
     if (Total_Weight > Weight_Limit || CG < CG_Limit_Forward || CG > CG_Limit_Rear) {
+        fprintf(stdout, "\nThe total weight is: %g lbs.\n", Total_Weight);
+        fprintf(stdout, "The CG location is: %g inches from the nose.\n", CG);
         fprintf(stdout, "\nThe aircraft is outside the weight or CG limits.\n");
         
         //If the weight and CG are not in the correct limit, this while loop will run untill they are
