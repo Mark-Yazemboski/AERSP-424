@@ -77,7 +77,7 @@ class Plane
     //Private Section
     private:
 
-        //Sets all of the variables and makes a new Airport rout
+        //Sets all of the private variables and makes a new Airport rout
         double pos;
         double vel;
         double distance;
