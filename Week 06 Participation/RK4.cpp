@@ -117,6 +117,21 @@ float** multiplyMatrixByScalar(float** matrix, float scalar) {
 }
 
 
+float* multiplyMatrixVector(float** dcm, float* velocity) {
+    // Dynamically allocate result vector (3 elements)
+    float* result = new float[3];
+
+    // Perform matrix-vector multiplication
+    for (int i = 0; i < 3; ++i) {
+        result[i] = 0;  // Initialize result[i]
+        for (int j = 0; j < 3; ++j) {
+            result[i] += dcm[i][j] * velocity[j];  // Access DCM as a 2D pointer
+        }
+    }
+
+    return result;
+}
+
 // This is the function that will do our ODE for us. It takes in a state vector, and a time and it will output
 // Derivative state vector and PQR values
 std::tuple<float*, float**,float*> Diff_EQs(float t, float* Euler_Angles,float** DCM, int size) {
@@ -144,14 +159,42 @@ std::tuple<float*, float**,float*> Diff_EQs(float t, float* Euler_Angles,float**
     delete[] temp_dydt;
 
     float**  C_Dot = Strap_Down_Equation(pqr, DCM);
+
+    // Get Velocity in NED
+    //this is positiondot for position measured in NED
+    float Velocity[3] = {Euler_Angles[3], Euler_Angles[4], Euler_Angles[5]};  // Assuming Euler_Angles array is defined
+    float* Rotated_V = multiplyMatrixVector( DCM, Velocity);
+
+
+    // Assemble the vector of state derivatives -- putting in zeros for the
+    // derivative of velocity since it is a constant here
+
+
+    float* extended_dydt = new float[size];
+
+    extended_dydt[0] = dydt[0];
+    extended_dydt[1] = dydt[1];
+    extended_dydt[2] = dydt[2];
+    extended_dydt[3] = 0;
+    extended_dydt[4] = 0;
+    extended_dydt[5] = 0;
+    extended_dydt[6] = Rotated_V[0];
+    extended_dydt[7] = Rotated_V[1];
+    extended_dydt[8] = Rotated_V[2];
+
     
+    
+
     // Return both dydt and pqr
-    return std::make_tuple(dydt,C_Dot, pqr);
+    return std::make_tuple(extended_dydt,C_Dot, pqr);
 }
+
+
 
 // Rk4 Function, It will take in a ODE function, time span, initial state, stepsize, and size of the state vector.
 // It will output a time array, solution array, and Rates_of_Change array encapsulated in RK4Result.
 RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
+
 
     float** DCM = new float*[3];
     float** R_phi = new float*[3];
@@ -165,9 +208,9 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
     }
 
     // Identity matrix (DCM initialized as identity)
-    DCM[0][0] = 1.0; DCM[0][1] = 0.0; DCM[0][2] = 0.0;
-    DCM[1][0] = 0.0; DCM[1][1] = 1.0; DCM[1][2] = 0.0;
-    DCM[2][0] = 0.0; DCM[2][1] = 0.0; DCM[2][2] = 1.0;
+    DCM[0][0] = 1.0f; DCM[0][1] = 0.0f; DCM[0][2] = 0.0f;
+    DCM[1][0] = 0.0f; DCM[1][1] = 1.0f; DCM[1][2] = 0.0f;
+    DCM[2][0] = 0.0f; DCM[2][1] = 0.0f; DCM[2][2] = 1.0f;
 
     // Rotation matrix for phi (around x-axis)
     R_phi[0][0] = 1; R_phi[0][1] = 0;                        R_phi[0][2] = 0;
@@ -184,14 +227,12 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
     R_psi[1][0] = sin(y0[2]); R_psi[1][1] = cos(y0[2]);  R_psi[1][2] = 0;
     R_psi[2][0] = 0;                    R_psi[2][1] = 0;                    R_psi[2][2] = 1;
 
-    // Perform matrix multiplication: DCM = R_phi * DCM
     DCM = matrixMultiply(R_phi, DCM);
-
-    // Perform matrix multiplication: temp1 = R_theta * temp1
+    
     DCM = matrixMultiply(R_theta, DCM);
-
-    // Perform matrix multiplication: temp2 = R_psi * temp2
+    
     DCM = matrixMultiply(R_psi, DCM);
+    
     
     RK4Result result; // Initialize the struct to hold results
 
@@ -236,13 +277,13 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
 
         // Store Rates_of_Change for k1
         for (int j = 0; j < Size; ++j) {
-            result.Rates_of_Change[i][j] = dydt1[j];
+            
             result.PQR[i][j] = pqr1[j];
         }
 
         // Calculate k1
         for (int j = 0; j < Size; ++j) {
-            k1[j] = h * dydt1[j];
+            k1[j] = dydt1[j];
         }
 
         // Free memory allocated by ODE
@@ -251,7 +292,7 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
         // Compute k2
         float* temp_for_K2 = new float[Size];
         for (int j = 0; j < Size; ++j) {
-            temp_for_K2[j] = result.Values[i][j] + k1[j] / 2.0f; 
+            temp_for_K2[j] = result.Values[i][j] + k1[j] / 2.0f * h; 
         }
 
         float** K2_DCM_Input = addMatrices(DCM, multiplyMatrixByScalar(Cdot1, h/2.0));
@@ -260,7 +301,7 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
         auto [dydt2, Cdot2, pqr2] = res_k2;
 
         for (int j = 0; j < Size; ++j) {
-            k2[j] = h * dydt2[j];
+            k2[j] = dydt2[j];
         }
 
         delete[] dydt2;
@@ -270,7 +311,7 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
         // Compute k3
         float* temp_for_K3 = new float[Size];
         for (int j = 0; j < Size; ++j) {
-            temp_for_K3[j] = result.Values[i][j] + k2[j] / 2.0f; 
+            temp_for_K3[j] = result.Values[i][j] + k2[j] / 2.0f * h; 
         }
 
         float** K3_DCM_Input = addMatrices(DCM, multiplyMatrixByScalar(Cdot2, h/2.0));
@@ -279,7 +320,7 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
         auto [dydt3, Cdot3, pqr3] = res_k3;
 
         for (int j = 0; j < Size; ++j) {
-            k3[j] = h * dydt3[j];
+            k3[j] = dydt3[j];
         }
 
         delete[] dydt3;
@@ -289,7 +330,7 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
         // Compute k4
         float* temp_for_K4 = new float[Size];
         for (int j = 0; j < Size; ++j) {
-            temp_for_K4[j] = result.Values[i][j] + k3[j]; 
+            temp_for_K4[j] = result.Values[i][j] + k3[j]*h; 
         }
 
         float** K4_DCM_Input = addMatrices(DCM, multiplyMatrixByScalar(Cdot3, h));
@@ -298,30 +339,37 @@ RK4Result rk4(DiffEqFunc ODE, float* tspan, float* y0, float h, int Size) {
         auto [dydt4, Cdot4, pqr4] = res_k4;
 
         for (int j = 0; j < Size; ++j) {
-            k4[j] = h * dydt4[j];
+            k4[j] = dydt4[j];
         }
 
         delete[] dydt4;
         delete[] pqr4;
         delete[] temp_for_K4;
 
-        float** totalCdot = multiplyMatrixByScalar(addMatrices(addMatrices(addMatrices(Cdot1,multiplyMatrixByScalar(Cdot2,2)),multiplyMatrixByScalar(Cdot3,2)),Cdot4),(1.0/6.0));
+        float** CD2_Mult = multiplyMatrixByScalar(Cdot2,2);
+        float** CD3_Mult = multiplyMatrixByScalar(Cdot3,2);
+        float** totalCdot = multiplyMatrixByScalar(addMatrices(addMatrices(addMatrices(Cdot1,CD2_Mult),CD3_Mult),Cdot4),(1.0/6.0));
         
+
+        for (int l = 0; l < Size; ++l) {
+            result.Rates_of_Change[i][l] = (1.0f / 6.0f) * (k1[l] + 2.0f * k2[l] + 2.0f * k3[l] + k4[l]);
+        }
 
         DCM = addMatrices(DCM,multiplyMatrixByScalar(totalCdot,h));
         // Update the next Values using RK4 formula
         for (int j = 0; j < Size; ++j) {
-            float Angle = result.Values[i][j] + (1.0f / 6.0f) * (k1[j] + 2.0f * k2[j] + 2.0f * k3[j] + k4[j]);
-
+            float Value = result.Values[i][j] + result.Rates_of_Change[i][j]*h;
+            if (j <3){
             // Normalize the angle to [0, 2π]
-            while (Angle > 2 * M_PI){
-                Angle -= 2 * M_PI;
+            while (Value > 2 * M_PI){
+                Value -= 2 * M_PI;
             }
-            while (Angle < 0){
-                Angle += 2 * M_PI;
+            while (Value < -2*M_PI){
+                Value += 2 * M_PI;
+            }
             }
 
-            result.Values[i + 1][j] = Angle;
+            result.Values[i + 1][j] = Value;
         }
     }
 
@@ -369,10 +417,10 @@ int main() {
     float Tspan[2] = {0.0f, 60.0f};
 
     // Sets the state vector size to 3
-    int Size = 3;
+    int Size = 9;
 
     // Initializes the initial state vector
-    float Y0[3] = {0.0f, 0.0f, 0.0f};
+    float Y0[Size] = {0.0f, 0.0f, 0.0f,101.269f,0.0f,0.0f,0.0f,0.0f,0.0f};
 
     // Runs through all of the h values
     for (int i = 0; i < 4; i++) {
